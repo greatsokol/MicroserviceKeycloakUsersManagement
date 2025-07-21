@@ -25,9 +25,7 @@ public class UserApiController extends CommonController {
         this.userRepository = userRepository;
     }
 
-    @PreAuthorize("hasAnyAuthority(@getUserRoles)")
-    @GetMapping(path = "/{realmName}/{userName}")
-    public UserApiResponse userPage(@PathVariable String realmName, @PathVariable String userName, boolean successResult) {
+    private UserApiResponse getUserPage(String realmName, String userName, boolean successResult) {
         saveLoginEvent();
 
         var response = new UserApiResponse(
@@ -35,10 +33,16 @@ public class UserApiController extends CommonController {
                 userRepository.findByUserNameAndRealmName(userName, realmName)
         );
 
-        if (!successResult) {
+        if (!successResult && response.payload != null) {
             response.payload.setComment("Ошибка операции");
         }
         return response;
+    }
+
+    @PreAuthorize("hasAnyAuthority(@getUserRoles)")
+    @GetMapping(path = "/{realmName}/{userName}")
+    public UserApiResponse userPage(@PathVariable String realmName, @PathVariable String userName) {
+        return getUserPage(realmName, userName, true);
     }
 
     @PreAuthorize("hasAnyAuthority(@getAdminRoles)")
@@ -57,9 +61,9 @@ public class UserApiController extends CommonController {
         tmpUser.setUserStatusFromController(enabled, adminName);
         if (keycloakClient.updateUserFromController(tmpUser, adminName)) {
             user.setUserStatusFromController(enabled, adminName);
-            return userPage(realmName, userName, true);
+            return getUserPage(realmName, userName, true);
         }
-        return userPage(realmName, userName, false);
+        return getUserPage(realmName, userName, false);
     }
 
     @Data
