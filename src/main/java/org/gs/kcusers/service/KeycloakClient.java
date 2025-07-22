@@ -445,7 +445,7 @@ public class KeycloakClient {
         user.setEnabled(false);
         user.setManuallyEnabledTime(null);
         user.setCommentDisabledForInactivity();
-        updateUser(keycloak, user, "system");
+        updateUser(keycloak, user, KCUSERS_SCHEDULED_SERVICE);
         logger.info("Successfully DISABLED user {} ({})", user.getUserName(), user.getRealmName());
     }
 
