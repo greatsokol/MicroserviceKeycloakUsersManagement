@@ -342,7 +342,7 @@ public class KeycloakClient {
                 user.setCommentEnabledAfterBecomeActive();
                 userRepository.save(user);
                 eventRepository.save(new Event(user.getUserName(), user.getRealmName(), Instant.now().toEpochMilli(),
-                        "system", user.getComment(), user.getEnabled()));
+                        KCUSERS_SCHEDULED_SERVICE, user.getComment(), user.getEnabled()));
             }
         }
 
