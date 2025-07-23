@@ -92,7 +92,7 @@ public class VaultConfig {
             Object value = entry.getValue();
 
             if (value instanceof LinkedHashMap) {
-                traverse(vaultTemplate, token, mountName, (LinkedHashMap<?, ?>) value, fullPath += "/" + key);
+                traverse(vaultTemplate, token, mountName, (LinkedHashMap<?, ?>) value, fullPath + "/" + key);
             } else if (value instanceof String) { // Обработка других типов Map
                 if (secretData == null) {
                     secretData = getData(vaultTemplate, token, mountName, fullPath);

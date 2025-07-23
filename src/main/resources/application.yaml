@@ -12,7 +12,7 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/kcusers
+    url: jdbc:postgresql://localhost:5432,localhost:5432/kcusers
 
   jpa:
     show-sql: false
@@ -31,9 +31,9 @@ server:
   ssl:
 #    certificate: "classpath:localhost.crt"
 #    certificate-private-key: "classpath:localhost.key"
-    key-store: classpath:localhost.p12
-    key-store-type: PKCS12
-    key-store-password: 1979
+#    key-store: classpath:localhost.p12
+#    key-store-type: PKCS12
+#    key-store-password: 1979
 
 #    client-auth: need
 #    trust-certificate: classpath:sokolov.personal.ca2.crt
@@ -49,7 +49,7 @@ front:
 
 #-----------------------------------------------------------------------------
 service:
-  cron: 00 * * * * *
+  cron: 30 * * * * *
   keycloakclient:
     realms: master,APIM,APIM_FS
     url: https://keycloak.local
@@ -107,8 +107,13 @@ vault:
   paths:
     apim:
       apps:
-        config:
-          kcusers:
+        kcusers:
+          config:
             db-username: spring.datasource.username
             db-password: spring.datasource.password
             service-keycloak-client-secret: service.keycloakclient.client.client-secret
+          certificates:
+            tls:
+              server:
+                certificate: server.ssl.certificate
+                privateKey: server.ssl.certificate-private-key

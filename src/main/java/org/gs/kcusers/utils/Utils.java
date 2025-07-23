@@ -6,6 +6,9 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.jwt.Jwt;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.gs.kcusers.configs.yamlobjects.Configurations.KCUSERS_SCHEDULED_SERVICE;
@@ -91,5 +94,10 @@ public class Utils {
             return jwt.getClaimAsInstant("exp").toEpochMilli();
         }
         return null;
+    }
+
+    public static String formatDate(long date) {
+        return DateTimeFormatter.ofPattern("dd MMMM yyyy, HH:mm:ss z")
+                .withZone(ZoneId.systemDefault()).format(Instant.ofEpochMilli(date));
     }
 }

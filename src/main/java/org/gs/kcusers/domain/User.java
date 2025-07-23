@@ -4,17 +4,17 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
-import org.gs.kcusers.configs.yamlobjects.Configurations;
 import org.gs.kcusers.configs.localization.LocalizedMessages;
+import org.gs.kcusers.configs.yamlobjects.Configurations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
+
+import static org.gs.kcusers.utils.Utils.formatDate;
 
 @Entity
 @EntityListeners(EntityListener.class)
@@ -55,9 +55,7 @@ public class User {
     }
 
     private String addNow() {
-        String formattedDate = DateTimeFormatter.ofPattern("dd MMMM yyyy, HH:mm:ss z")
-                .withZone(ZoneId.systemDefault())
-                .format(Instant.now());
+        String formattedDate = formatDate(Instant.now().toEpochMilli());
         return " (" + formattedDate + ")";
     }
 
