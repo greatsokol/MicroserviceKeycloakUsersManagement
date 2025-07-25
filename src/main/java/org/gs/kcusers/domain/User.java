@@ -3,16 +3,15 @@ package org.gs.kcusers.domain;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.gs.kcusers.configs.localization.LocalizedMessages;
 import org.gs.kcusers.configs.yamlobjects.Configurations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Objects;
 
 import static org.gs.kcusers.utils.Utils.formatDate;
 
@@ -160,24 +159,9 @@ public class User {
         }
     }
 
-    public static class UserPK implements Serializable {
+    @EqualsAndHashCode
+    public static class UserPK {
         private String userName;
         private String realmName;
-
-        public UserPK() {
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            UserPK userPK = (UserPK) o;
-            return Objects.equals(userName, userPK.userName) && Objects.equals(realmName, userPK.realmName);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(userName, realmName);
-        }
     }
 }

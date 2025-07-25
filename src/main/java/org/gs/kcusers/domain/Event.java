@@ -3,10 +3,8 @@ package org.gs.kcusers.domain;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-
-import java.io.Serializable;
-import java.util.Objects;
 
 @Entity
 @EntityListeners(EntityListener.class)
@@ -31,27 +29,11 @@ public class Event {
     public Event() {
     }
 
-    public static class EventPK implements Serializable {
+    @EqualsAndHashCode
+    public static class EventPK {
         private String userName;
         private String realmName;
         private Long created;
-
-        public EventPK() {
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Event.EventPK eventPK = (Event.EventPK) o;
-            return Objects.equals(userName, eventPK.userName) && Objects.equals(realmName, eventPK.realmName)
-                    && Objects.equals(created, eventPK.created);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(userName, realmName, created);
-        }
     }
 
 

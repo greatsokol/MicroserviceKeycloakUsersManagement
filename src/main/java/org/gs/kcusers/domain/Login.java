@@ -3,9 +3,7 @@ package org.gs.kcusers.domain;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.io.Serializable;
-import java.util.Objects;
+import lombok.EqualsAndHashCode;
 
 @Entity
 @EntityListeners(EntityListener.class)
@@ -28,28 +26,11 @@ public class Login {
     public Login() {
     }
 
-    public static class LoginPK implements Serializable {
+    @EqualsAndHashCode
+    public static class LoginPK {
         private String userName;
         private Long authTime;
         private String session;
-
-        public LoginPK() {
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            LoginPK loginPK = (LoginPK) o;
-            return Objects.equals(userName, loginPK.userName) &&
-                    Objects.equals(authTime, loginPK.authTime) &&
-                    Objects.equals(session, loginPK.session);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(userName, authTime, session);
-        }
     }
 
 }

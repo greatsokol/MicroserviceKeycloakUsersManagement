@@ -3,12 +3,11 @@ package org.gs.kcusers.domain;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.Serializable;
 import java.time.Instant;
-import java.util.Objects;
 import java.util.UUID;
 
 import static org.gs.kcusers.utils.Utils.*;
@@ -122,21 +121,6 @@ public class Audit {
     @Column(name = "description", columnDefinition = "VARCHAR(255)")
     String description;
 
-    private String cutString(String s, int l) {
-        if (s != null && s.length() > 255) {
-            return s.substring(0, l);
-        }
-        return s;
-    }
-
-    private void fillTokenData() {
-        this.tokenUser = cutString(getAuthorizedUserName(), 255);
-        this.tokenGroups = cutString(grantedAuthoritiesListAsString(), 255);
-        this.tokenSid = cutString(getAuthorizedUserJwtSessionId(), 255);
-        this.tokenIat = getAuthorizedUserJwtIat();
-        this.tokenExp = getAuthorizedUserJwtExp();
-    }
-
     // database event
     public Audit(@NonNull String subType, Object dbEntity) {
         this.auditEventType = RS_OI;
@@ -146,12 +130,12 @@ public class Audit {
         this.tableName = dbEntity.getClass().getSimpleName().toLowerCase();
         this.tableFields = cutString(dbEntity.toString(), 255);
         if (dbEntity instanceof User) {
-            this.description = ((User)dbEntity).getComment();
-            this.kcEnabled = ((User)dbEntity).getEnabled();
+            this.description = ((User) dbEntity).getComment();
+            this.kcEnabled = ((User) dbEntity).getEnabled();
         }
-        if(dbEntity instanceof Event){
-            this.description = ((Event)dbEntity).getComment();
-            this.kcEnabled = ((Event)dbEntity).getEnabled();
+        if (dbEntity instanceof Event) {
+            this.description = ((Event) dbEntity).getComment();
+            this.kcEnabled = ((Event) dbEntity).getEnabled();
         }
         fillTokenData();
     }
@@ -208,32 +192,28 @@ public class Audit {
 
     }
 
-    public static class AuditPK implements Serializable {
+    private String cutString(String s, int l) {
+        if (s != null && s.length() > 255) {
+            return s.substring(0, l);
+        }
+        return s;
+    }
+
+    private void fillTokenData() {
+        this.tokenUser = cutString(getAuthorizedUserName(), 255);
+        this.tokenGroups = cutString(grantedAuthoritiesListAsString(), 255);
+        this.tokenSid = cutString(getAuthorizedUserJwtSessionId(), 255);
+        this.tokenIat = getAuthorizedUserJwtIat();
+        this.tokenExp = getAuthorizedUserJwtExp();
+    }
+
+    @EqualsAndHashCode
+    public static class AuditPK {
         //private Long id;
         private String auditEventId;
         private Long auditEventCreated;
         private String auditEventType;
         private String auditEventSubType;
         private String auditEventEntity;
-
-        public AuditPK() {
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Audit.AuditPK auditPK = (Audit.AuditPK) o;
-            return Objects.equals(auditEventId, auditPK.auditEventId) &&
-                    Objects.equals(auditEventCreated, auditPK.auditEventCreated) &&
-                    Objects.equals(auditEventType, auditPK.auditEventType) &&
-                    Objects.equals(auditEventSubType, auditPK.auditEventSubType) &&
-                    Objects.equals(auditEventEntity, auditPK.auditEventEntity);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(auditEventId, auditEventCreated, auditEventType, auditEventSubType, auditEventEntity);
-        }
     }
 }
