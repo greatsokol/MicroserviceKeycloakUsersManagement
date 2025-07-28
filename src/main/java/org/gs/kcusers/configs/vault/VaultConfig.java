@@ -164,7 +164,7 @@ public class VaultConfig {
     }
 
     LinkedHashMap<?, ?> getData(RestTemplate restTemplate, String token, String mountName, String path) {
-        String secretUri = uri + "/v1/" + mountName + "/data/" + path;
+        String secretUri = uri + "/v1/" + mountName + "/data" + path;
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.set("X-Vault-Token", token);
