@@ -192,7 +192,7 @@ public class Audit {
 
     }
 
-    private String cutString(String s, int l) {
+    private static String cutString(String s, int l) {
         if (s != null && s.length() > 255) {
             return s.substring(0, l);
         }
