@@ -20,44 +20,33 @@
         </encoder>
     </appender>
 
-    <appender name="EXCEPTIONS" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${KCUSERS_APP_HOME:-./}/logs/exceptions.log</file>
-        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
-            <evaluator>
-                <expression>return event.toString().contains("ERROR");</expression>
-            </evaluator>
-            <OnMismatch>DENY</OnMismatch>
-            <OnMatch>ACCEPT</OnMatch>
-        </filter>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!-- daily rollover -->
-            <fileNamePattern>../logs/exceptions_%d{yyyy-MM-dd}.log</fileNamePattern>
+    <!--    <appender name="EXCEPTIONS" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
+    <!--        <file>${KCUSERS_APP_HOME:-./}/logs/exceptions.log</file>-->
+    <!--        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">-->
+    <!--            <evaluator>-->
+    <!--                <expression>return event.toString().contains("ERROR");</expression>-->
+    <!--            </evaluator>-->
+    <!--            <OnMismatch>DENY</OnMismatch>-->
+    <!--            <OnMatch>ACCEPT</OnMatch>-->
+    <!--        </filter>-->
+    <!--        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">-->
+    <!--            &lt;!&ndash; daily rollover &ndash;&gt;-->
+    <!--            <fileNamePattern>../logs/exceptions_%d{yyyy-MM-dd}.log</fileNamePattern>-->
 
-            <!-- keep 30 days' worth of history -->
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
+    <!--            &lt;!&ndash; keep 30 days' worth of history &ndash;&gt;-->
+    <!--            <maxHistory>30</maxHistory>-->
+    <!--        </rollingPolicy>-->
+    <!--        <encoder>-->
+    <!--            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
+    <!--        </encoder>-->
+    <!--    </appender>-->
 
-<!--    <logger name="java.lang.Throwable" level="ERROR" additivity="false">-->
-<!--        <appender-ref ref="EXCEPTIONS"/>-->
-<!--    </logger>-->
-<!--    <logger name="org.gs.kcusers.configs.vault.VaultConfig" level="ERROR" additivity="false">-->
-<!--        <appender-ref ref="EXCEPTIONS"/>-->
-<!--    </logger>-->
-<!--    <logger name="javax.ws.rs.ServerErrorException" level="ERROR" additivity="false">-->
-<!--        <appender-ref ref="EXCEPTIONS"/>-->
-<!--    </logger>-->
-
-    <logger name="org.springframework.security.web" level="DEBUG"/>
-
+    <logger name="org.springframework.security.web" level="INFO"/>
 
 
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="FILE"/>
-        <appender-ref ref="EXCEPTIONS"/>
+        <!--        <appender-ref ref="EXCEPTIONS"/>-->
     </root>
 </configuration>

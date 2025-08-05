@@ -53,7 +53,7 @@ service:
   #cron: 0 1-59/2 * * * *
   cron: 0 * * * * *
   keycloakclient:
-    realms: master,APIM,APIM_FS
+    realms: APIM
     url: https://keycloak.local
     client:
       client-id: kcusers_service_client

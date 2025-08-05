@@ -21,7 +21,8 @@ import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
-import org.keycloak.representations.idm.*;
+import org.keycloak.representations.idm.EventRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,7 +40,9 @@ import java.io.FileNotFoundException;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 import static org.gs.kcusers.configs.yamlobjects.Configurations.KCUSERS_SCHEDULED_SERVICE;
 import static org.springframework.util.ResourceUtils.getFile;
@@ -58,42 +61,30 @@ public class KeycloakClient {
     private final EventRepository eventRepository;
 
     private final AuditRepository auditRepository;
-
-    @Value("${service.keycloakclient.realms}")
-    private String KEYCLOAK_REALMS;
-
-    @Value("${service.keycloakclient.url}")
-    private String KEYCLOAK_URL;
-
-    @Value("${service.keycloakclient.admin.realm}")
-    private String KEYCLOAK_ADMIN_USER_REALM;
-
-    @Value("${service.keycloakclient.admin.login:#{null}}")
-    private String KEYCLOAK_ADMIN_LOGIN;
-
-    @Value("${service.keycloakclient.admin.password:#{null}}")
-    private String KEYCLOAK_ADMIN_PASSWORD;
-
-    @Value("${service.keycloakclient.client.client-id}")
-    private String KEYCLOAK_CLIENT;
-
-    @Value("${service.keycloakclient.client.client-secret:#{null}}")
-    private String KEYCLOAK_CLIENT_SECRET;
-
-    @Value("${service.keycloakclient.inactivity.dryrun:false}")
-    private boolean KEYCLOAK_DRY_RUN;
-
     @Value("${service.keycloakclient.mtls.enabled:false}")
     boolean mtlsEnabled;
-
     @Value("${service.keycloakclient.mtls.keyStore.path:#{null}}")
     String path;
-
     @Value("${service.keycloakclient.mtls.keyStore.type:#{null}}")
     String type;
-
     @Value("${service.keycloakclient.mtls.keyStore.password:#{null}}")
     String password;
+    @Value("${service.keycloakclient.realms}")
+    private String KEYCLOAK_REALMS;
+    @Value("${service.keycloakclient.url}")
+    private String KEYCLOAK_URL;
+    @Value("${service.keycloakclient.admin.realm}")
+    private String KEYCLOAK_ADMIN_USER_REALM;
+    @Value("${service.keycloakclient.admin.login:#{null}}")
+    private String KEYCLOAK_ADMIN_LOGIN;
+    @Value("${service.keycloakclient.admin.password:#{null}}")
+    private String KEYCLOAK_ADMIN_PASSWORD;
+    @Value("${service.keycloakclient.client.client-id}")
+    private String KEYCLOAK_CLIENT;
+    @Value("${service.keycloakclient.client.client-secret:#{null}}")
+    private String KEYCLOAK_CLIENT_SECRET;
+    @Value("${service.keycloakclient.inactivity.dryrun:false}")
+    private boolean KEYCLOAK_DRY_RUN;
 
     public KeycloakClient(@Value("${service.cron}") String cron,
                           ProtectedUsers protectedUsers,
@@ -176,7 +167,7 @@ public class KeycloakClient {
         logger.info("-------- START TASK --------");
         List<String> realmNames = Arrays.asList(KEYCLOAK_REALMS.split("\\s*,\\s*"));
         try (Keycloak keycloak = buildKeycloak()) {
-            realmNames.forEach(realmName -> processUsers(keycloak, getUsers(keycloak, realmName)));
+            realmNames.forEach(realmName -> processUsers(keycloak, realmName, getUsers(keycloak, realmName)));
         }
         logger.info("-------- FINISHED TASK --------");
     }
@@ -281,8 +272,7 @@ public class KeycloakClient {
 
     private void addNewUser(User user) {
         userRepository.save(user);// add new user
-        eventRepository.save(new Event(user.getUserName(), user.getRealmName(), Instant.now().toEpochMilli(),
-                KCUSERS_SCHEDULED_SERVICE, "Добавлен пользователь Keycloak", user.getEnabled()));
+        addEvent(user, KCUSERS_SCHEDULED_SERVICE, "Добавлен пользователь Keycloak");
     }
 
     private boolean forceUpdateUser(User ourSavedUser, User user) {
@@ -290,6 +280,11 @@ public class KeycloakClient {
                 !Objects.equals(ourSavedUser.getLastLogin(), user.getLastLogin()) ||
                 !Objects.equals(ourSavedUser.getUserId(), user.getUserId()) ||
                 !Objects.equals(ourSavedUser.getCreated(), user.getCreated());
+    }
+
+    private void addEvent(User user, String admLogin, String message) {
+        eventRepository.save(new Event(user.getUserName(), user.getRealmName(), Instant.now().toEpochMilli(),
+                admLogin, message, user.getEnabled()));
     }
 
     private void processUser(Keycloak keycloak, User user) {
@@ -341,8 +336,7 @@ public class KeycloakClient {
                 user.setManuallyEnabledTime(null);
                 user.setCommentEnabledAfterBecomeActive();
                 userRepository.save(user);
-                eventRepository.save(new Event(user.getUserName(), user.getRealmName(), Instant.now().toEpochMilli(),
-                        KCUSERS_SCHEDULED_SERVICE, user.getComment(), user.getEnabled()));
+                addEvent(user, KCUSERS_SCHEDULED_SERVICE, user.getComment());
             }
         }
 
@@ -364,15 +358,21 @@ public class KeycloakClient {
         }
     }
 
-    private void processUsers(Keycloak keycloak, List<User> users) {
-        if (users == null) return;
+    private void processUsers(Keycloak keycloak, String realmName, List<User> usersFromKeycloak) {
+        if (usersFromKeycloak == null) return;
+        // блокировка "пропавших" из КК пользователей
+        List<User> usersFromDb = userRepository.findAllByRealmNameAndEnabled(realmName, true);
+        usersFromDb.stream()
+                .filter(user -> !usersFromKeycloak.contains(user))
+                .forEach(this::disableDisappearedUser);
+
         // проверка незащищенных пользователей (с возможной блокировкой):
-        users.stream()
+        usersFromKeycloak.stream()
                 .filter(this::userIsUnprotected)
                 .forEach(user -> processUser(keycloak, user));
 
         // проверка защищенных пользователей (просто сохранение изменений):
-        users.stream()
+        usersFromKeycloak.stream()
                 .filter(this::userIsProtected)
                 .forEach(this::justSaveUser);
     }
@@ -405,13 +405,7 @@ public class KeycloakClient {
                 logger.info("DRY RUN ENABLED. Update of user {} ({}) skipped", user.getUserName(), user.getRealmName());
             }
             userRepository.save(user);
-            eventRepository.save(
-                    new Event(
-                            user.getUserName(), user.getRealmName(),
-                            Instant.now().toEpochMilli(), admLogin,
-                            user.getComment(), user.getEnabled()
-                    )
-            );
+            addEvent(user, admLogin, user.getComment());
             return true;
         } catch (Exception e) {
             String message = String.format("Error while updating user %s (%s): %s", user.getUserName(),
@@ -449,6 +443,25 @@ public class KeycloakClient {
         logger.info("Successfully DISABLED user {} ({})", user.getUserName(), user.getRealmName());
     }
 
+    private void disableDisappearedUser(User user) {
+        if (userIsProtected(user)) {
+            return;
+        }
+        user.setEnabled(false);
+        user.setManuallyEnabledTime(null);
+        user.setCommentDisabledBecauseDisappeared(KCUSERS_SCHEDULED_SERVICE);
+        userRepository.save(user);
+        addEvent(user, KCUSERS_SCHEDULED_SERVICE, user.getComment());
+        auditRepository.save(new Audit(
+                Audit.ENT_KEYCLOAK,
+                Audit.SUBTYPE_UPDATE,
+                user.getRealmName(),
+                user.getUserName(),
+                user.getEnabled(),
+                user.getComment()));
+        logger.info("Successfully DISABLED disappeared user {} ({})", user.getUserName(), user.getRealmName());
+    }
+
     public boolean updateUserFromController(User user, String admLogin) {
         if (userIsProtected(user)) {
             return false;
@@ -477,7 +490,6 @@ public class KeycloakClient {
                 user.getClientRoles()
 
         );
-
 
 
         //protected List<CredentialRepresentation> credentials;

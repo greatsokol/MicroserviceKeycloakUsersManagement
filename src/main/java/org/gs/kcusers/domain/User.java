@@ -21,12 +21,15 @@ import static org.gs.kcusers.utils.Utils.formatDate;
 @AllArgsConstructor
 @IdClass(User.UserPK.class)
 @Table(name = "users", schema = "kcusers")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class User {
     private static Logger logger = LoggerFactory.getLogger(User.class);
 
     @Id
+    @EqualsAndHashCode.Include
     String userName;
     @Id
+    @EqualsAndHashCode.Include
     String realmName;
     @NonNull
     String userId;
@@ -76,6 +79,10 @@ public class User {
     public void setCommentDisabledBy(String adminUserName) {
         setComment(LocalizedMessages.getMessage("backend.user.disabledby",
                 new Object[]{adminUserName, addNow()}));
+    }
+
+    public void setCommentDisabledBecauseDisappeared(String adminUserName) {
+        setComment(String.format("Заблокирован по причине убытия %s %s", adminUserName, addNow()));
     }
 
     public boolean userIsOldAndInactive() {
