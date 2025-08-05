@@ -81,8 +81,8 @@ public class User {
                 new Object[]{adminUserName, addNow()}));
     }
 
-    public void setCommentDisabledBecauseDisappeared(String adminUserName) {
-        setComment(String.format("Заблокирован по причине убытия %s %s", adminUserName, addNow()));
+    public void setCommentDisabledBecauseDisappeared() {
+        setComment(String.format("Заблокирован по причине убытия %s", addNow()));
     }
 
     public boolean userIsOldAndInactive() {

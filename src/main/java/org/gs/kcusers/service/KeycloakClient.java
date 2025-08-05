@@ -449,7 +449,7 @@ public class KeycloakClient {
         }
         user.setEnabled(false);
         user.setManuallyEnabledTime(null);
-        user.setCommentDisabledBecauseDisappeared(KCUSERS_SCHEDULED_SERVICE);
+        user.setCommentDisabledBecauseDisappeared();
         userRepository.save(user);
         addEvent(user, KCUSERS_SCHEDULED_SERVICE, user.getComment());
         auditRepository.save(new Audit(
