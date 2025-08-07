@@ -4,7 +4,6 @@ package org.gs.kcusers.configs.vault;
 import net.minidev.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,35 +19,24 @@ import java.util.Map;
 @Configuration
 public class VaultConfig {
     private static final Logger logger = LoggerFactory.getLogger(VaultConfig.class);
-
+    private final VaultPaths paths;
     @Value("${vault.enabled:false}")
     boolean enabled;
-
     @Value("${vault.uri:#{null}}")
     String uri;
-
     @Value("${vault.ssl.type:#{null}}")
     String sslType;
-
     @Value("${vault.ssl.certificate:#{null}}")
     String sslCertificate;
-
     @Value("${vault.ssl.key:#{null}}")
     String sslKeyPath;
-
     @Value("${vault.ssl.key-store:#{null}}")
     String sslKeyStore;
-
     @Value("${vault.ssl.key-store-type:#{null}}")
     String sslKeyStoreType;
-
     @Value("${vault.ssl.key-store-password:#{null}}")
     String sslKeyStorePassword;
 
-
-    private final VaultPaths paths;
-
-    @Autowired
     VaultConfig(VaultPaths paths) {
         this.paths = paths;
     }
@@ -188,7 +176,7 @@ public class VaultConfig {
             }
             return data;
         } catch (Exception e) {
-            throw new RuntimeException("Vault: \""+secretUri+"\" failed with exception", e);
+            throw new RuntimeException("Vault: \"" + secretUri + "\" failed with exception", e);
         }
 
     }

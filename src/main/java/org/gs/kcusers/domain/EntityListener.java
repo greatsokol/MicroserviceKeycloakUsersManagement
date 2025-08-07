@@ -4,7 +4,6 @@ import jakarta.persistence.PostPersist;
 import jakarta.persistence.PostRemove;
 import jakarta.persistence.PostUpdate;
 import org.gs.kcusers.repositories.AuditRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,11 +12,11 @@ import static org.springframework.transaction.annotation.Propagation.REQUIRES_NE
 
 @Component
 public class EntityListener {
-    //Logger logger = LoggerFactory.getLogger(EntityListener.class.getName());
-
-    @Autowired
-    @Lazy
     AuditRepository auditRepository;
+
+    EntityListener(@Lazy AuditRepository auditRepository) {
+        this.auditRepository = auditRepository;
+    }
 
 //    @PrePersist
 //    private void preInsert(Object entity) {

@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import net.minidev.json.JSONObject;
 import org.gs.kcusers.domain.Audit;
 import org.gs.kcusers.repositories.AuditRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +20,11 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 
 @RestControllerAdvice()
 public class GlobalExceptionHandler {
-    @Autowired
-    AuditRepository auditRepository;
+    private final AuditRepository auditRepository;
+
+    GlobalExceptionHandler(AuditRepository auditRepository) {
+        this.auditRepository = auditRepository;
+    }
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<JSONObject> handleAuthenticationException(HttpServletRequest request, AuthenticationException e) { //

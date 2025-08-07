@@ -2,9 +2,9 @@ package org.gs.kcusers.configs.exceptionhandlers;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.Setter;
 import org.gs.kcusers.domain.Audit;
 import org.gs.kcusers.repositories.AuditRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
@@ -21,9 +21,30 @@ import java.util.Map;
 @Component("delegatedBearerTokenAuthenticationEntryPoint")
 public final class DelegatedBearerTokenAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    @Autowired
     AuditRepository auditRepository;
+    @Setter
     private String realmName;
+
+    DelegatedBearerTokenAuthenticationEntryPoint(AuditRepository auditRepository) {
+        this.auditRepository = auditRepository;
+    }
+
+    private static String computeWWWAuthenticateHeaderValue(Map<String, String> parameters) {
+        StringBuilder wwwAuthenticate = new StringBuilder();
+        wwwAuthenticate.append("Bearer");
+        if (!parameters.isEmpty()) {
+            wwwAuthenticate.append(" ");
+            int i = 0;
+            for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                wwwAuthenticate.append(entry.getKey()).append("=\"").append(entry.getValue()).append("\"");
+                if (i != parameters.size() - 1) {
+                    wwwAuthenticate.append(", ");
+                }
+                i++;
+            }
+        }
+        return wwwAuthenticate.toString();
+    }
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
@@ -62,27 +83,5 @@ public final class DelegatedBearerTokenAuthenticationEntryPoint implements Authe
         response.addHeader(HttpHeaders.WWW_AUTHENTICATE, wwwAuthenticate);
         response.setStatus(status.value());
     }
-
-    public void setRealmName(String realmName) {
-        this.realmName = realmName;
-    }
-
-    private static String computeWWWAuthenticateHeaderValue(Map<String, String> parameters) {
-        StringBuilder wwwAuthenticate = new StringBuilder();
-        wwwAuthenticate.append("Bearer");
-        if (!parameters.isEmpty()) {
-            wwwAuthenticate.append(" ");
-            int i = 0;
-            for (Map.Entry<String, String> entry : parameters.entrySet()) {
-                wwwAuthenticate.append(entry.getKey()).append("=\"").append(entry.getValue()).append("\"");
-                if (i != parameters.size() - 1) {
-                    wwwAuthenticate.append(", ");
-                }
-                i++;
-            }
-        }
-        return wwwAuthenticate.toString();
-    }
-
 }
 

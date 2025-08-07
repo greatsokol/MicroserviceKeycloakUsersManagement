@@ -4,7 +4,6 @@
 
 package org.gs.kcusers.configs.localization;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +13,6 @@ import java.util.Locale;
 public class LocalizedMessages {
     private static MessageSource messageSource;
 
-    @Autowired
     public LocalizedMessages(MessageSource messageSource) {
         LocalizedMessages.messageSource = messageSource;
     }

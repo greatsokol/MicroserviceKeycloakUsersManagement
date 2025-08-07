@@ -1,7 +1,6 @@
 package org.gs.kcusers.configs;
 
 import org.gs.kcusers.configs.exceptionhandlers.DelegatedBearerTokenAuthenticationEntryPoint;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,14 +24,15 @@ import static org.gs.kcusers.configs.yamlobjects.Configurations.ROLES_TOKEN_CLAI
 @Configuration
 @EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfig {
-    @Autowired
-    @Qualifier("delegatedAuthenticationEntryPoint")
-    AuthenticationEntryPoint authEntryPoint;
+    private final AuthenticationEntryPoint authEntryPoint;
 
+    private final DelegatedBearerTokenAuthenticationEntryPoint bearerTokenAuthenticationEntryPoint;
 
-    @Autowired
-    @Qualifier("delegatedBearerTokenAuthenticationEntryPoint")
-    DelegatedBearerTokenAuthenticationEntryPoint bearerTokenAuthenticationEntryPoint;
+    SecurityConfig(@Qualifier("delegatedAuthenticationEntryPoint") AuthenticationEntryPoint authEntryPoint,
+                   @Qualifier("delegatedBearerTokenAuthenticationEntryPoint") DelegatedBearerTokenAuthenticationEntryPoint bearerTokenAuthenticationEntryPoint) {
+        this.authEntryPoint = authEntryPoint;
+        this.bearerTokenAuthenticationEntryPoint = bearerTokenAuthenticationEntryPoint;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
