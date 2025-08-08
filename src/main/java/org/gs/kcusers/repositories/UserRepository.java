@@ -6,15 +6,20 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
     User findByUserNameAndRealmName(String userName, String realmName);
 
-    Page<User> findByUserNameContainingOrderByRealmNameAscUserNameAsc(String userName, Pageable pagable);
+    Page<User> findByRealmNameInAndUserNameContainingOrderByRealmNameAscUserNameAsc(
+            Collection<String> realmName,
+            String userName,
+            Pageable pagable
+    );
 
-    Page<User> findAllByOrderByRealmNameAscUserNameAsc(Pageable pagable);
+    Page<User> findByRealmNameInOrderByRealmNameAscUserNameAsc(Collection<String> realmName, Pageable pagable);
 
 //    @Query(value = "SELECT DISTINCT realmName FROM User")
 //    List<String> finaAllRealmNames();

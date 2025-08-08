@@ -9,6 +9,7 @@ import lombok.Data;
 import org.gs.kcusers.controller.CommonController;
 import org.gs.kcusers.domain.User;
 import org.gs.kcusers.repositories.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -18,10 +19,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 @RestController
 @RequestMapping("/api")
 public class UsersApiController extends CommonController {
     protected UserRepository userRepository;
+
+    @Value("${service.keycloakclient.realms}")
+    private String KEYCLOAK_REALMS;
+
+    private ArrayList<String> keycloakRealms;
+
 
     UsersApiController(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -33,7 +43,7 @@ public class UsersApiController extends CommonController {
         saveLoginEvent();
         return new UsersApiResponse(
                 getPrincipal(),
-                userRepository.findAllByOrderByRealmNameAscUserNameAsc(pagable),
+                userRepository.findByRealmNameInOrderByRealmNameAscUserNameAsc(getKeycloakRealms(), pagable),
                 null
         );
     }
@@ -53,11 +63,18 @@ public class UsersApiController extends CommonController {
 
         return new UsersApiResponse(
                 getPrincipal(),
-                userRepository.findByUserNameContainingOrderByRealmNameAscUserNameAsc(filter, pagable),
+                userRepository.findByRealmNameInAndUserNameContainingOrderByRealmNameAscUserNameAsc(
+                        getKeycloakRealms(), filter, pagable),
                 filter
         );
     }
 
+    private ArrayList<String> getKeycloakRealms() {
+        if (keycloakRealms == null) {
+            keycloakRealms = new ArrayList<>(Arrays.asList(KEYCLOAK_REALMS.split(",")));
+        }
+        return keycloakRealms;
+    }
 
     @Data
     @AllArgsConstructor
