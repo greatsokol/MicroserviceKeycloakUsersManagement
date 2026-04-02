@@ -1,9 +1,8 @@
 package org.gs.kcusers.configs.vault;
 
 
+import lombok.extern.log4j.Log4j2;
 import net.minidev.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,8 +16,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Configuration
+@Log4j2
 public class VaultConfig {
-    private static final Logger logger = LoggerFactory.getLogger(VaultConfig.class);
     private final VaultPaths paths;
     @Value("${vault.enabled:false}")
     boolean enabled;
@@ -45,11 +44,11 @@ public class VaultConfig {
     @Bean
     public int VaultDataImport() {
         if (!enabled) {
-            logger.info("Vault: Not enabled");
+            log.info("Vault: Not enabled");
             return -1;
         }
         checkSettings();
-        logger.info("Vault: Enabled at {}", uri);
+        log.info("Vault: Enabled at {}", uri);
 
         try {
             var vaultRestTemplate = createRestTemplate();
@@ -58,14 +57,14 @@ public class VaultConfig {
             paths.getPaths().forEach(
                     (mountName, children) -> {
                         try {
-                            logger.info("Vault: Mount name \"{}\"", mountName);
+                            log.info("Vault: Mount name \"{}\"", mountName);
                             traverse(vaultRestTemplate, token, mountName, (LinkedHashMap<?, ?>) children, "");
                         } catch (Exception e) {
                             throw new RuntimeException("Vault: Error for mount \"" + mountName + "\"", e);
                         }
                     }
             );
-            logger.info("Vault: Data loaded successfully");
+            log.info("Vault: Data loaded successfully");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -95,7 +94,7 @@ public class VaultConfig {
         if (value == null) {
             throw new RuntimeException("Vault: Not found KV \"" + fullPath + "/" + vaultValueKey + "\"");
         }
-        logger.info("Vault: Found \"{}\"", fullPath + "/" + vaultValueKey);
+        log.info("Vault: Found \"{}\"", fullPath + "/" + vaultValueKey);
         System.setProperty(settingName, value);
     }
 
