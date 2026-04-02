@@ -4,7 +4,7 @@ spring:
   #    activate:
   #      on-profile: dev
   datasource:
-    url: jdbc:h2:file:./src/main/resources/data/kcdb;AUTO_SERVER=TRUE;INIT=CREATE SCHEMA IF NOT EXISTS KCUSERS
+    url: jdbc:h2:file:./db-dev/kcdb;AUTO_SERVER=TRUE;INIT=CREATE SCHEMA IF NOT EXISTS KCUSERS
     driverClassName: org.h2.Driver
     username: sa
     password: password
