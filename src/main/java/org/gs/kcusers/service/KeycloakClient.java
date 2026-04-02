@@ -149,7 +149,12 @@ public class KeycloakClient {
 
         // set ssl context to RESTEasy client
         try {
-            builder.resteasyClient((ResteasyClient) (ClientBuilderWrapper.create(SSLContext.getDefault(), false).register(JacksonProvider.class, 100)).build());
+            var client = (ResteasyClient) (ClientBuilderWrapper.create(SSLContext.getDefault(), false)
+                    .register(JacksonProvider.class, 100))
+                    //.register(LoggingFilter.class, 200)
+                    .build();
+
+            builder.resteasyClient(client);
         } catch (NoSuchAlgorithmException e) {
             auditRepository.save(new Audit(
                     Audit.ENT_KEYCLOAK,
@@ -189,6 +194,7 @@ public class KeycloakClient {
                         null
                 )
                 .stream()
+                .parallel()
                 .mapToLong(EventRepresentation::getTime)
                 .max()
                 .orElse(0L);
@@ -236,10 +242,11 @@ public class KeycloakClient {
                     .users()
                     .list()
                     .stream()
+                    .parallel()
                     .map(userRepresentation -> userPresentationToUser(keycloak, realmName, userRepresentation)
                     ).toList();
 
-            logger.info("Users of realm {} found: {}", realmName, users.stream().map(User::getUserName).toList());
+            logger.info("Users of realm {} found: {}", realmName, users.stream().parallel().map(User::getUserName).toList());
         } catch (ProcessingException | ForbiddenException | NotFoundException e) {
             var cause = e.getCause();
             if (cause instanceof NotFoundException || e instanceof NotFoundException) {
@@ -363,16 +370,19 @@ public class KeycloakClient {
         // блокировка "пропавших" из КК пользователей
         List<User> usersFromDb = userRepository.findAllByRealmNameAndEnabled(realmName, true);
         usersFromDb.stream()
+                .parallel()
                 .filter(user -> !usersFromKeycloak.contains(user))
                 .forEach(this::disableDisappearedUser);
 
         // проверка незащищенных пользователей (с возможной блокировкой):
         usersFromKeycloak.stream()
+                .parallel()
                 .filter(this::userIsUnprotected)
                 .forEach(user -> processUser(keycloak, user));
 
         // проверка защищенных пользователей (просто сохранение изменений):
         usersFromKeycloak.stream()
+                .parallel()
                 .filter(this::userIsProtected)
                 .forEach(this::justSaveUser);
     }
