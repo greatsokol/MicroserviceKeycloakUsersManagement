@@ -12,7 +12,8 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432,xeon.lan:5432/kcusers
+#    url: jdbc:postgresql://localhost:5432,xeon.lan:5432/kcusers
+    url: jdbc:postgresql://localhost:5432/kcusers
 
   jpa:
     show-sql: false
